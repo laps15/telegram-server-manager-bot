@@ -36,35 +36,35 @@ server = Server(['ngrok', 'java'])
 
 
 def start(update: Update, context: CallbackContext) -> None:
-    if security.authenticate_user(update.message.chat.username, "start", logger):
+    if security.authenticate_user(update.message.from_user.username, "start", logger):
         update.message.reply_text('Hi!')
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    if security.authenticate_user(update.message.chat.username, "help", logger):
+    if security.authenticate_user(update.message.from_user.username, "help", logger):
         update.message.reply_text('Help!')
 
 
 def status(update: Update, context: CallbackContext):
-    if security.authenticate_user(update.message.chat.username, "status", logger):
+    if security.authenticate_user(update.message.from_user.username, "status", logger):
         server_status = "Server is currently " + server.get_status(True)
         update.message.reply_text(server_status)
 
 
 def get_server_url_if_able(update: Update, context: CallbackContext):
-    if security.authenticate_user(update.message.chat.username, "server_url", logger):
+    if security.authenticate_user(update.message.from_user.username, "server_url", logger):
         update.message.reply_text(server.get_server_url())
 
 
 def stop_server_if_able(update: Update, context: CallbackContext):
-    if security.authenticate_user(update.message.chat.username, "stop_server", logger):
+    if security.authenticate_user(update.message.from_user.username, "stop_server", logger):
         should_use_force = "--force" in update.message.text
-        server.stop_server(should_use_force)
-        update.message.reply_text('Done!')
+        success = server.stop_server(should_use_force)
+        update.message.reply_text('Done!' if success else 'Could not stop server try the --force option')
 
 
 def start_server_if_able(update: Update, context: CallbackContext):
-    if security.authenticate_user(update.message.chat.username, "start_server", logger):
+    if security.authenticate_user(update.message.from_user.username, "start_server", logger):
         message = server.start_server()
         update.message.reply_text(message)
 

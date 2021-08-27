@@ -1,5 +1,6 @@
 import subprocess
 import json
+import time
 import os
 
 import config
@@ -7,6 +8,7 @@ import config
 
 class Server:
     def __init__(self, processes):
+        self.running_processes = {}
         self.root_dir = os.getcwd()
         self.processes = processes
         self.active_processes = {}
@@ -68,13 +70,14 @@ class Server:
         for process in self.processes:
             cmd = 'taskkill ' + ('/F ' if should_use_force else ' ') + '/IM  ' + process + '.exe'
             os.system(cmd)
-        return True
+        return self.is_running()
 
     def start_server(self) -> str:
         if not self.is_running():
             for process in self.processes:
                 process_cmd = config.server_processes[process]
-                self.start_process(process_cmd)
+                self.running_processes[process] = self.start_process(process_cmd)
+            time.sleep(1)
             self.init_tunnel_data_file()
             return 'Started ' + ' and '.join(self.processes)+' please wait a while for connecting to it: ' + self.get_server_url()
         return 'Server is already UP'
@@ -83,5 +86,6 @@ class Server:
         cmd = process_cmd['exe']
         dir = process_cmd['dir'] or '.'
         os.chdir(dir)
-        os.system(cmd)
+        proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1)
         os.chdir(self.root_dir)
+        return proc
