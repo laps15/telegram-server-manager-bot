@@ -1,7 +1,12 @@
 AUTH_TOKEN = "TOKEN"
 
+process_names = ['notepad']
+
 server_processes = {
-    'notepad': 'C:\\Windows\\notepad.exe',
+    'notepad': {
+        'dir': 'C:\\Windows',
+        'exe': 'notepad.exe',
+    },
 }
 
 acl_enabled = True
