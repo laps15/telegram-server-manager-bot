@@ -2,7 +2,6 @@ import config
 
 from logging import Logger
 
-
 def allowed_user(username: str, action: str) -> bool:
     if config.acl_enabled:
         try:
@@ -14,7 +13,7 @@ def allowed_user(username: str, action: str) -> bool:
                 acl = []
         if len(acl) < 1:
             return False
-        return action in acl or "all" in acl
+        return action in acl or "all" in acl and not ("~"+action) in acl
 
     return True
 

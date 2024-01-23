@@ -1,5 +1,7 @@
 AUTH_TOKEN = "TOKEN"
 
+ALLOW_ADMIN_PROCESSES = True
+
 process_names = ['notepad']
 
 server_processes = {

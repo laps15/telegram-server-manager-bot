@@ -55,16 +55,23 @@ class Server:
     def stop_server(self, should_use_force: bool=False) -> bool:
         for process in self.processes:
             process.stop(should_use_force)
+        
+        self.network_manager.stop()
 
         return not self.is_running()
 
+    def set_address(self, address: str):
+        self.network_manager.set_address(address)
+
     def start_server(self) -> str:
         if not self.is_running():
+            if not self.network_manager.init():
+                return 'Network Manager not running'
+            
             up_processes = []
             for process in self.processes:
                 process.start()
                 up_processes.append(process.name)
-            self.network_manager.init()
             time.sleep(1)
 
             return 'Started ' + ' and '.join(up_processes)+' please wait a while for connecting to it: ' + self.get_server_url()

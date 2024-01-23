@@ -1,7 +1,14 @@
 import subprocess
 import os
 
-class Process:        
+import config
+import security
+
+class Process:
+    mode = 'regular'    
+    dir = None
+    to_kill = None
+
     def get_memory_usage(self):
         process_name = (self.to_kill or self.exe).split('.')[0]
         cmd = 'powershell "gps -name ' + process_name + ' -ErrorAction SilentlyContinue | select PM"'
@@ -14,24 +21,30 @@ class Process:
 
         return mem_in_use
 
+    def get_cmd(self):
+        return self.exe
+
     def start(self):
-        cmd = self.exe
+        cmd = self.get_cmd()
         dir = self.dir or '.'
 
         prev_dir = os.getcwd()
         os.chdir(dir)
-        self.proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1)
+        self._proc_data = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1)
         os.chdir(prev_dir)
 
-        return self.proc
+        return self._proc_data
     
-    def stop(self, should_use_force: bool) -> bool:
+    def get_stop_cmd(self, should_use_force: bool):
         process_name = self.to_kill or self.exe
-        cmd = 'taskkill ' + ('/F ' if should_use_force else ' ') + '/IM  ' + process_name
-        cmd_result = os.system(cmd)
+        kill_cmd = 'taskkill ' + ('/F ' if should_use_force else ' ') + '/IM  ' + process_name
+        return kill_cmd
+
+    def stop(self, should_use_force: bool = False) -> bool:
+        cmd = self.get_stop_cmd(should_use_force)
+        cmd_result = subprocess.call(cmd)
 
         return cmd_result == 0
-
 
 class ProcessBuilder:
     def __init__(self):
@@ -53,6 +66,10 @@ class ProcessBuilder:
         self.instance.to_kill = to_kill
         return self
     
-    def build(self):
+    def as_admin(self):
+        self.instance.mode = 'admin'
+        return self
+    
+    def build(self) -> Process:
         return self.instance
         
