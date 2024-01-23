@@ -14,5 +14,6 @@ server_processes = {
 acl_enabled = True
 acl = {
     "user1": ["all"],
+    "user3": ["all", "~stop_server"],
     "user2": ["status"],
 }
