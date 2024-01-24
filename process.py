@@ -4,10 +4,17 @@ import os
 import config
 import security
 
+from shutil import copyfile, make_archive
+from datetime import datetime
+
 class Process:
     mode = 'regular'    
     dir = None
     to_kill = None
+
+    backup_configured = False
+    target_path = None
+    destination_path = None
 
     def get_memory_usage(self):
         process_name = (self.to_kill or self.exe).split('.')[0]
@@ -46,6 +53,24 @@ class Process:
 
         return cmd_result == 0
 
+    def get_backup_filename(self):
+        return datetime.now().strftime("%Y%m%d%H%M%S")
+
+    def do_backup(self) -> bool:
+        if not self.backup_configured:
+            return True
+        
+        destination = os.path.join(self.destination_path, self.get_backup_filename())
+        target = os.path.join(self.target_path)
+
+        if os.path.exists(destination + '.zip') or not os.path.exists(self.target_path):
+            return False
+        
+        print ('Will backup path:', target, 'into', destination+'.zip')
+        make_archive(destination, 'zip', target)
+        
+        return True
+
 class ProcessBuilder:
     def __init__(self):
         self.instance = Process()
@@ -68,6 +93,16 @@ class ProcessBuilder:
     
     def as_admin(self):
         self.instance.mode = 'admin'
+        return self
+
+    def with_target_path(self, target_path: str):
+        self.instance.backup_configured = True
+        self.instance.target_path = target_path
+        return self
+
+    def with_destination_path(self, destination_path: str):
+        self.instance.backup_configured = True
+        self.instance.destination_path = destination_path
         return self
     
     def build(self) -> Process:

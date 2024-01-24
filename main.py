@@ -68,6 +68,12 @@ async def start_server_if_able(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text(message)
 
 
+async def run_backup_if_able(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if security.authenticate_user(update.message.from_user.username, "run_backup", logger):
+        message = server.run_backup()
+        await update.message.reply_text(message)
+
+
 
 def main() -> None:
     app = ApplicationBuilder().token(config.AUTH_TOKEN).build()
@@ -77,6 +83,7 @@ def main() -> None:
     app.add_handler(CommandHandler("server_url", get_server_url_if_able))
     app.add_handler(CommandHandler("stop_server", stop_server_if_able))
     app.add_handler(CommandHandler("start_server", start_server_if_able))
+    app.add_handler(CommandHandler("run_backup", run_backup_if_able))
 
     app.run_polling()
 
